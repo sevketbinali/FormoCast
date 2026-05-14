@@ -1,0 +1,17 @@
+version: '3.8'
+
+services:
+  app:
+    build: .
+    volumes:
+      - .:/app
+      - data_volume:/app/data
+      - plots_volume:/app/plots
+    env_file:
+      - .env
+    stdin_open: true
+    tty: true
+
+volumes:
+  data_volume:
+  plots_volume:
