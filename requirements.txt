@@ -8,3 +8,7 @@ matplotlib
 jinja2
 requests
 schedule
+pytest
+websockets
+fastapi
+uvicorn

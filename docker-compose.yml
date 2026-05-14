@@ -1,7 +1,5 @@
-version: '3.8'
-
 services:
-  app:
+  scheduler:
     build: .
     volumes:
       - .:/app
@@ -9,8 +7,26 @@ services:
       - plots_volume:/app/plots
     env_file:
       - .env
-    stdin_open: true
-    tty: true
+    command: ["python", "scheduler.py"]
+    restart: always
+
+  dashboard:
+    build: .
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/app
+      - data_volume:/app/data
+    env_file:
+      - .env
+    command: ["python", "dashboard.py"]
+    restart: always
+
+  test:
+    build: .
+    volumes:
+      - .:/app
+    command: ["python", "-m", "unittest", "discover", "tests"]
 
 volumes:
   data_volume:

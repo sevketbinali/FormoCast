@@ -2,6 +2,7 @@ import argparse
 from services.data_fetcher import DataFetcher
 from core.detector import PatternDetector
 from services.visualizer import Visualizer
+from services.interactive_visualizer import InteractiveVisualizer
 from services.notifier import Notifier
 from services.telegram_notifier import TelegramNotifier
 from db.models import Database
@@ -11,6 +12,7 @@ def run_scanner(tickers):
     fetcher = DataFetcher()
     detector = PatternDetector()
     visualizer = Visualizer()
+    interactive_viz = InteractiveVisualizer()
     notifier = Notifier()
     tg_notifier = TelegramNotifier()
     db = Database()
@@ -27,7 +29,8 @@ def run_scanner(tickers):
             detector.detect_double_bottom(df),
             detector.detect_head_and_shoulders(df),
             detector.detect_triangle(df),
-            detector.detect_wedge(df)
+            detector.detect_wedge(df),
+            detector.detect_cup_and_handle(df)
         ]
 
         for p in patterns:
@@ -37,11 +40,14 @@ def run_scanner(tickers):
                 current_price = df['Close'].iloc[-1]
                 db.save_prediction(ticker, p['pattern'], p['prediction'], current_price)
                 
-                # Generate Visual
+                # Generate Static Visual
                 chart_path = visualizer.plot_pattern(df, ticker, p)
                 
+                # Generate Interactive Visual
+                html_path = interactive_viz.generate_html(df, ticker, p)
+                
                 # Notify via Email
-                notifier.send_pattern_alert(ticker, p, chart_path)
+                notifier.send_pattern_alert(ticker, p, chart_path, html_path)
 
                 # Notify via Telegram
                 caption = f"🚀 *FormoCast Alert: {p['pattern']}*\nTicker: {ticker}\nPrediction: {p['prediction']}"

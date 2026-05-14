@@ -3,10 +3,12 @@
 FormoCast; hisse senedi ve kripto grafiklerinde teknik analiz formasyonlarını tespit eden, fiyat hareketlerini öngören ve sizi profesyonel düzeyde görsel raporlarla e-posta yoluyla bilgilendiren otonom bir finansal analiz servisidir.
 
 ## ✨ Temel Özellikler
-- **Otomatik Tespit:** İkili Tepe, İkili Dip ve daha fazlasını tanımlar.
-- **Premium Raporlar:** Doğrudan gelen kutunuza gönderilen karanlık mod (dark-mode) grafikleri.
+- **Otomatik Tespit:** İkili Tepe/Dip, Omuz Baş Omuz, Üçgen ve Takoz formasyonları.
+- **İnteraktif Raporlar:** Plotly tabanlı, tarayıcıda incelenebilir interaktif grafikler.
+- **Premium Statik Görseller:** E-postalarda hızlı önizleme için karanlık mod grafikler.
 - **Performans Analitiği:** Zaman içindeki tahmin doğruluğunu izler.
-- **Docker Hazır:** Tek bir komutla her yerde dağıtın.
+- **Otonom Çalışma:** Zamanlanmış görevlerle 7/24 kesintisiz izleme.
+- **Çok Kanallı Bildirim:** E-posta ve Telegram üzerinden anlık uyarılar.
 
 ## 🛠 Teknoloji Yığını
 - **Python 3.10+** (Pandas, Scipy, Matplotlib)

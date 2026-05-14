@@ -12,15 +12,19 @@
 - [x] **T-2.3: Yönetici Bildirim Servisi**
 - [x] **T-2.4: Birleşik Orkestrasyon CLI**
 
-## Aşama 3: Analiz ve Güvenilirlik (Devam Ediyor 🚧)
+## Aşama 3: Analiz ve Güvenilirlik (Tamamlandı ✅)
 - [x] **T-3.1: Tahmin Doğruluk Denetçisi**
 - [ ] **T-3.2: Kamuoyu Deposu Dağıtımı (GitHub)**
 - [x] **T-3.3: Haftalık Yönetici Özeti Oluşturucu**
 - [x] **T-3.4: Otonom Zamanlayıcı (Scheduler)**
-    - *Başarı Kriteri:* Sistem 7/24 manuel müdahale olmadan çalışır.
+- [x] **T-3.5: Test Altyapısı ve Doğrulama**
 
-## Aşama 4: Genişleme ve Cila (Gelecek 🚀)
+## Aşama 4: Genişleme ve Cila (Devam Ediyor 🚧)
 - [x] **T-4.1: Gelişmiş Formasyon Tanıma (Omuz Baş Omuz)**
 - [x] **T-4.2: Telegram/Discord Entegrasyonu**
 - [x] **T-4.4: Üçgen Formasyonları (Symmetrical Triangle)**
+- [x] **T-4.5: Takoz Formasyonları (Rising/Falling Wedge)**
+- [x] **T-4.6: İnteraktif HTML Raporları (Plotly)**
+- [x] **T-4.7: Yönetici Dashboard'u (FastAPI)**
+- [x] **T-4.8: Docker Optimizasyonu (Non-root, Healthcheck)**
 - [ ] **T-4.3: Gerçek Zamanlı Veri Akışı (WebSockets)**

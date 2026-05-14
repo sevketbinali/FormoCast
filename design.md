@@ -16,6 +16,11 @@ graph TD
         F[DataFetcher - yfinance]
         V[Visualizer - Matplotlib]
         N[Notifier - SMTP & Telegram]
+        DB_WEB[Executive Dashboard - FastAPI]
+    end
+    subgraph Automation
+        SCH[Scheduler]
+        STR[Streamer - WebSocket]
     end
     subgraph Data
         DB[(SQLite DB)]
@@ -29,49 +34,27 @@ graph TD
     V --> N
     CLI --> A
     A --> DB
+    DB --> DB_WEB
 ```
 
-### 2.1 Ayrıştırılmış Servis Katmanları
-Ölçeklenebilirliği sağlamak için sistem dört farklı katmana ayrılmıştır:
+### 2.1 Ayrıştırılmış Servis Katmanları (Multi-Service Docker)
+Sistem artık Docker Compose üzerinden yönetilen bağımsız mikro-servislere ayrılmıştır:
 
-1.  **Veri Katmanı:** `services/data_fetcher.py` - yfinance API'sinin karmaşıklıklarını soyutlar. Önbelleğe alma ve hız sınırlama korumalarını uygular.
-2.  **Zeka Katmanı:** `core/detector.py` & `core/predictor.py` - Formasyon tanıma için saf Python mantığı. `numpy` ve `scipy` dışında harici bağımlılık barındırmaz.
-3.  **Görsel ve İletişim Katmanı:** `services/visualizer.py`, `services/notifier.py` & `services/telegram_notifier.py` - "Premium" kullanıcı deneyiminden sorumludur. Grafik oluşturma, SMTP ve Telegram gönderimini yönetir.
-4.  **Kalıcılık Katmanı:** `db/models.py` - Bir "Tahmin"in yaşam döngüsünü izleyen yönetilen SQLite örneği.
+1.  **FormoCast-Scheduler:** 7/24 otonom çalışan tarama ve raporlama motoru.
+2.  **FormoCast-Dashboard:** FastAPI tabanlı, görsel istatistikler sunan web arayüzü.
+3.  **FormoCast-Streamer:** WebSocket üzerinden canlı veri akışını yöneten servis.
 
-## 3. Derinlemesine İnceleme: Formasyon Tespit Algoritması
-"Kara kutu" tespitinden kaçınıyoruz. Algoritmamız deterministik bir geometrik yaklaşım izler:
+## 3. Güvenlik ve Docker Optimizasyonu
+- **Non-Root User:** Tüm servisler `appuser` adlı düşük yetkili bir kullanıcı ile çalıştırılarak güvenlik arttırılmıştır.
+- **Healthchecks:** Docker, servislerin sağlık durumunu `/health` endpoint'i üzerinden periyodik olarak kontrol eder.
+- **Persistent Storage:** Veritabanı ve grafikler için ayrılmış Docker Volume'ları kullanılır.
 
-### 3.1 Pik/Dip Senkronizasyonu
-`argrelextrema` kullanarak, fiyat serisinin seyrek bir temsilini oluşturuyoruz.
-- **Değişken Pencereleme:** `window` parametresi, gürültü tabanlı tespitleri önlemek için varlığın oynaklığına (volatility) göre dinamik olarak ayarlanabilir.
+## 4. Yönetici Dashboard'u
+FastAPI tabanlı dashboard (`dashboard.py`), kullanıcının projenin performansını bir bakışta görmesini sağlar:
+- **Metrikler:** Toplam tespit sayısı, başarı/başarısızlık oranı.
+- **Trendler:** En sık görülen formasyonların listesi.
+- **Görünüm:** Kasıtlı minimalizm ilkelerine uygun, yüksek kontrastlı Dark-Mode tasarımı.
 
-### 3.2 Formasyon Mantığı: İkili Tepe Örneği
-```python
-# Sözde Mantık (Pseudo-logic)
-def detect_double_top():
-    1. Son iki tepe noktasını belirle (P1, P2).
-    2. abs(P1.fiyat - P2.fiyat) / P1.fiyat < 0.02 olduğunu doğrula.
-    3. Mevcut fiyatın "Boyun Çizgisi"nin (P1 ve P2 arasındaki dip) altında olduğunu kontrol et.
-    4. Tahmini onayla: "Aşağı".
-```
-
-## 4. Görsel Kimlik (Ultrathink Protokolü)
-- **Palet:** 
-    - Arka Plan: `#1a1a1a` (Derin Uzay Grisi)
-    - Birincil Eylem: `#00d1b2` (Elektrik Turkuazı)
-    - Uyarı/Tehlike: `#ff3860` (Canlı Kırmızı)
-- **Tipografi:** Raporlar, e-posta istemcilerinde maksimum okunabilirlik için sans-serif yazı tiplerini (Inter/Roboto) kullanır.
-
-## 5. Güvenlik ve Kalıcılık Stratejisi
-- **Docker İzolasyonu:** Uygulama rootless bir konteyner içinde çalışır.
-- **Volume Stratejisi:** SQLite veritabanı, konteyner yeniden oluşturulduğunda veri kaybını önlemek için kalıcı bir host volume'una bağlanır.
-- **Ortam Yönetimi:** Hassas anahtarlar `python-dotenv` aracılığıyla yönetilir, asla Git'e commit edilmez.
-
-## 6. Uç Durum Analizi (Edge Case Analysis)
-| Uç Durum | Önleme Stratejisi |
-| :--- | :--- |
-| **Piyasa Boşlukları (Gaps)** | Bölünmeler ve temettüler için `yfinance` otomatik düzeltmesini kullanma. |
-| **E-posta Engelleme** | SMTP gönderiminde üstel geri çekilme (exponential backoff) uygulama. |
-| **Formasyon Bulunamaması** | Servisin hala hayatta olduğunu doğrulamak için "Sessiz Taramaları" kaydetme. |
-| **Mükerrer Uyarılar** | DB kontrolü, aynı formasyon/ticker çifti için 24 saat içinde tekrar uyarı gönderilmesini engeller. |
+## 5. Test Stratejisi
+Her yeni özellik, `tests/` dizini altındaki birim testleri (unit tests) ile doğrulanmalıdır.
+- **Birim Testleri:** `docker-compose run test` komutuyla tüm mantık katmanları izole bir şekilde test edilir.
