@@ -32,7 +32,8 @@ RUN chown -R appuser:appgroup $APP_HOME
 
 # Create data and plots directories if they don't exist and set permissions
 RUN mkdir -p $APP_HOME/data $APP_HOME/plots && \
-    chown -R appuser:appgroup $APP_HOME/data $APP_HOME/plots
+    chown -R appuser:appgroup $APP_HOME/data $APP_HOME/plots && \
+    chmod -R 777 $APP_HOME/data $APP_HOME/plots
 
 # Switch to non-root user
 USER appuser

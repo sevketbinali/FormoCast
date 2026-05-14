@@ -1,49 +1,61 @@
 import matplotlib.pyplot as plt
-import pandas as pd
+import mplfinance as mpf
 import os
+import pandas as pd
+from datetime import datetime
 
 class Visualizer:
-    def __init__(self, output_dir: str = "plots"):
-        self.output_dir = output_dir
-        os.makedirs(self.output_dir, exist_ok=True)
-        # Apply a dark theme for a premium look
-        plt.style.use('dark_background')
+    def __init__(self, plots_dir=None):
+        self.plots_dir = plots_dir or os.getenv("PLOTS_DIR", "plots")
+        os.makedirs(self.plots_dir, exist_ok=True)
 
     def plot_pattern(self, df: pd.DataFrame, ticker: str, pattern_info: dict) -> str:
         """
-        Generates a chart highlighting the detected pattern.
+        Creates a high-fidelity candlestick chart with pattern highlights.
         """
-        plt.figure(figsize=(12, 6))
-        plt.plot(df.index, df['Close'], color='#00d1b2', label='Close Price', linewidth=1.5)
+        # Slice data to show only the last 50-60 candles for clarity
+        plot_df = df.tail(60).copy()
         
+        # Prepare pattern-specific markings
         pattern_name = pattern_info['pattern']
-        indices = pattern_info['indices']
+        indices = pattern_info.get('indices', [])
         
-        # Highlight pattern points
-        pattern_dates = df.index[indices]
-        pattern_values = df['Close'].iloc[indices]
-        plt.scatter(pattern_dates, pattern_values, color='#ff3860', s=100, zorder=5, label=f'{pattern_name} Points')
-        
-        # Add labels and title
-        plt.title(f"{ticker} - {pattern_name} Detected", fontsize=16, color='white', pad=20)
-        plt.xlabel("Date", color='#b5b5b5')
-        plt.ylabel("Price", color='#b5b5b5')
-        plt.legend()
-        plt.grid(color='#4a4a4a', linestyle='--', linewidth=0.5)
-        
-        # Save the plot
-        timestamp = pd.Timestamp.now().strftime("%Y%m%d_%H%M%S")
-        filename = f"{ticker}_{pattern_name}_{timestamp}.png"
-        filepath = os.path.join(self.output_dir, filename)
-        plt.savefig(filepath, bbox_inches='tight', dpi=150)
-        plt.close()
-        
-        return filepath
+        # Highlight points
+        h_points = []
+        for idx in indices:
+            if idx in plot_df.index: # If index is in our slice
+                h_points.append(plot_df.loc[idx, 'Close'])
+            else:
+                h_points.append(None)
 
-if __name__ == "__main__":
-    from services.data_fetcher import DataFetcher
-    fetcher = DataFetcher()
-    data = fetcher.fetch_ohlc("TSLA")
-    viz = Visualizer()
-    path = viz.plot_pattern(data, "TSLA", {"pattern": "Double Top", "indices": [len(data)-20, len(data)-10]})
-    print(f"Saved plot to {path}")
+        # File naming
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        filename = f"{ticker}_{pattern_name.replace(' ', '_')}_{timestamp}.png"
+        filepath = os.path.join(self.plots_dir, filename)
+
+        # Style configuration
+        mc = mpf.make_marketcolors(up='#00d1b2', down='#ff3860',
+                                  edge='inherit',
+                                  wick='inherit',
+                                  volume='inherit')
+        s  = mpf.make_mpf_style(base_mpf_style='nightclouds', marketcolors=mc, 
+                                gridcolor='#333333', facecolor='#0f0f0f')
+
+        # Add trendlines if needed (e.g. Neckline)
+        alines = []
+        if 'neckline' in pattern_info:
+            neck_val = pattern_info['neckline']
+            alines.append([(plot_df.index[0], neck_val), (plot_df.index[-1], neck_val)])
+
+        # Plotting
+        mpf.plot(plot_df, 
+                 type='candle', 
+                 style=s,
+                 title=f"\n{ticker} - {pattern_name}",
+                 ylabel='Fiyat',
+                 volume=True,
+                 alines=dict(alines=alines, colors='#00d1b2', linewidths=2, alpha=0.5),
+                 savefig=dict(fname=filepath, dpi=100, bbox_inches='tight'),
+                 tight_layout=True)
+
+        return filepath

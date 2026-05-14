@@ -16,6 +16,13 @@ class PatternDetector:
         troughs = argrelextrema(data, np.less, order=self.window)[0]
         return peaks, troughs
 
+    def _is_recent(self, df, indices, max_lookback=10):
+        """Checks if the pattern's last point is within the last 'max_lookback' candles."""
+        last_idx = max(indices)
+        # Convert index to position if it's datetime or something else
+        pos = df.index.get_loc(last_idx)
+        return (len(df) - 1 - pos) <= max_lookback
+
     def detect_double_top(self, df: pd.DataFrame, threshold: float = 0.02):
         """
         İkili Tepe tespiti ve Boyun Çizgisi Kırılımı.
@@ -30,6 +37,11 @@ class PatternDetector:
             return None
         
         p2_idx, p1_idx = peaks[-1], peaks[-2]
+        
+        # Recency Check: Tepe çok eski olmamalı
+        if not self._is_recent(df, [p2_idx], max_lookback=15):
+            return None
+
         p2_val, p1_val = df['Close'].iloc[p2_idx], df['Close'].iloc[p1_idx]
         
         # Tepeler arası mesafe kontrolü (Benzer seviye)
@@ -61,6 +73,11 @@ class PatternDetector:
             return None
 
         t2_idx, t1_idx = troughs[-1], troughs[-2]
+        
+        # Recency Check
+        if not self._is_recent(df, [t2_idx], max_lookback=15):
+            return None
+
         t2_val, t1_val = df['Close'].iloc[t2_idx], df['Close'].iloc[t1_idx]
         
         if abs(t2_val - t1_val) / t1_val < threshold:
@@ -92,6 +109,9 @@ class PatternDetector:
         
         p3, p2, p1 = df['Close'].iloc[peaks[-1]], df['Close'].iloc[peaks[-2]], df['Close'].iloc[peaks[-3]]
         
+        if not self._is_recent(df, [peaks[-1]], max_lookback=20):
+            return None
+
         if p2 > p1 and p2 > p3:
             shoulder_diff = abs(p1 - p3) / p1
             if shoulder_diff < threshold:
@@ -116,6 +136,9 @@ class PatternDetector:
         if len(peaks) < 3 or len(troughs) < 3:
             return None
         
+        if not self._is_recent(df, [peaks[-1], troughs[-1]], max_lookback=15):
+            return None
+
         last_peaks, last_troughs = peaks[-3:], troughs[-3:]
         p_slope, _, _, _, _ = linregress(np.arange(3), df['Close'].iloc[last_peaks].values)
         t_slope, _, _, _, _ = linregress(np.arange(3), df['Close'].iloc[last_troughs].values)
@@ -139,6 +162,36 @@ class PatternDetector:
             }
         return None
 
+    def detect_triangle(self, df: pd.DataFrame):
+        """
+        Simetrik Üçgen tespiti.
+        """
+        peaks, troughs = self.find_extrema(df)
+        if len(peaks) < 3 or len(troughs) < 3:
+            return None
+        
+        if not self._is_recent(df, [peaks[-1], troughs[-1]], max_lookback=15):
+            return None
+
+        last_peaks, last_troughs = peaks[-3:], troughs[-3:]
+        p_slope, _, _, _, _ = linregress(np.arange(3), df['Close'].iloc[last_peaks].values)
+        t_slope, _, _, _, _ = linregress(np.arange(3), df['Close'].iloc[last_troughs].values)
+        
+        # Simetrik: Biri negatif biri pozitif eğimli olmalı ve birbirlerine yaklaşmalı
+        if p_slope < 0 and t_slope > 0:
+            current_price = df['Close'].iloc[-1]
+            # Kırılım yönüne göre (basitçe son muma bakıyoruz şimdilik)
+            prediction = "Up" if current_price > df['Close'].iloc[last_peaks[-1]] else "Down"
+            target = current_price * 1.15 if prediction == "Up" else current_price * 0.85
+            return {
+                "pattern": "Symmetrical Triangle",
+                "indices": list(last_peaks) + list(last_troughs),
+                "target_price": target,
+                "prediction": prediction,
+                "timeframe_days": 10
+            }
+        return None
+
     def detect_cup_and_handle(self, df: pd.DataFrame, threshold: float = 0.05):
         """
         Fincan Kulp tespiti.
@@ -151,6 +204,9 @@ class PatternDetector:
         p2_idx, p1_idx = peaks[-1], peaks[-2]
         t2_idx, t1_idx = troughs[-1], troughs[-2]
         
+        if not self._is_recent(df, [p2_idx, t2_idx], max_lookback=25):
+            return None
+
         # Sıralama kontrolü: P1 < T1 < P2 < T2 (veya benzeri)
         if not (p1_idx < t1_idx < p2_idx < t2_idx):
             return None

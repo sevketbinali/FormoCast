@@ -7,6 +7,8 @@ services:
       - plots_volume:/app/plots
     env_file:
       - .env
+    environment:
+      - PYTHONPATH=/app
     command: ["python", "scheduler.py"]
     restart: always
 
@@ -19,6 +21,8 @@ services:
       - data_volume:/app/data
     env_file:
       - .env
+    environment:
+      - PYTHONPATH=/app
     command: ["python", "dashboard.py"]
     restart: always
 
@@ -30,6 +34,8 @@ services:
       - plots_volume:/app/plots
     env_file:
       - .env
+    environment:
+      - PYTHONPATH=/app
     command: ["python", "services/streamer.py"]
     restart: always
 
@@ -41,6 +47,8 @@ services:
       - plots_volume:/app/plots
     env_file:
       - .env
+    environment:
+      - PYTHONPATH=/app
     command: ["python", "services/bist_scanner.py"]
     restart: always
 

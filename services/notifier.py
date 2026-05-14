@@ -38,7 +38,7 @@ class Notifier:
               <p style="font-size: 18px;"><strong>{ticker}</strong> sembolünde <strong>{pattern_info['pattern']}</strong> formasyonu tespit edildi.</p>
               <p style="font-size: 16px;">
                 Öngörülen Yön: <span style="color: {'#48c774' if pattern_info['prediction'] == 'Up' else '#ff3860'}; font-weight: bold;">{pattern_info['prediction']}</span><br>
-                Hedef Fiyat: <span style="color: #00d1b2; font-weight: bold;">{pattern_info.get('target_price', 'Belirlenmedi'):.2f}</span><br>
+                Hedef Fiyat: <span style="color: #00d1b2; font-weight: bold;">{f"{pattern_info['target_price']:.2f}" if isinstance(pattern_info.get('target_price'), (int, float)) else 'Belirlenmedi'}</span><br>
                 Beklenen Vade: <span style="color: #b5b5b5;">{pattern_info.get('timeframe_days', '?')} Gün</span>
               </p>
               <div style="background-color: #333; padding: 15px; border-radius: 5px; margin-top: 20px; font-size: 14px; border-left: 4px solid #00d1b2;">

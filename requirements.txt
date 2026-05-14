@@ -12,3 +12,4 @@ pytest
 websockets
 fastapi
 uvicorn
+mplfinance
