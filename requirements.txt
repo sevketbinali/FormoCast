@@ -1,0 +1,8 @@
+yfinance
+pandas
+numpy
+scipy
+plotly
+python-dotenv
+matplotlib
+jinja2
