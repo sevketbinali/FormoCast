@@ -66,6 +66,59 @@ class Notifier:
         except Exception as e:
             print(f"Failed to send email: {e}")
 
-if __name__ == "__main__":
-    # Test block
-    pass
+    def send_weekly_summary(self, stats: dict):
+        """
+        Sends a weekly summary report of detection performance.
+        """
+        if not all([self.smtp_server, self.smtp_user, self.smtp_pass, self.receiver_email]):
+            print("SMTP settings missing. Skipping weekly summary.")
+            return
+
+        msg = MIMEMultipart()
+        msg['Subject'] = f"📊 FormoCast: Haftalık Performans Özeti"
+        msg['From'] = self.smtp_user
+        msg['To'] = self.receiver_email
+
+        pattern_list_html = "".join([f"<li>{p[0]}: {p[1]} adet</li>" for p in stats['top_patterns']])
+
+        html = f"""
+        <html>
+          <body style="background-color: #1a1a1a; color: #ffffff; font-family: sans-serif; padding: 20px;">
+            <div style="max-width: 600px; margin: auto; background-color: #2d2d2d; border-radius: 10px; padding: 30px; border: 1px solid #4a4a4a;">
+              <h1 style="color: #00d1b2; text-align: center;">Haftalık Performans Raporu</h1>
+              <hr style="border: 0; border-top: 1px solid #4a4a4a; margin: 20px 0;">
+              
+              <div style="display: flex; justify-content: space-around; text-align: center; margin-bottom: 30px;">
+                <div>
+                  <p style="color: #b5b5b5; margin: 0;">Toplam Tespit</p>
+                  <h2 style="margin: 5px 0;">{stats['total_detections']}</h2>
+                </div>
+                <div>
+                  <p style="color: #b5b5b5; margin: 0;">Doğruluk Oranı</p>
+                  <h2 style="margin: 5px 0; color: #00d1b2;">%{stats['accuracy_rate']:.1f}</h2>
+                </div>
+              </div>
+
+              <h3 style="color: #00d1b2;">En Sık Görülen Formasyonlar</h3>
+              <ul>
+                {pattern_list_html}
+              </ul>
+
+              <p style="font-size: 14px; color: #b5b5b5; margin-top: 30px; text-align: center;">
+                <em>FormoCast tarafından otomatik olarak oluşturulmuştur.</em>
+              </p>
+            </div>
+          </body>
+        </html>
+        """
+        
+        msg.attach(MIMEText(html, 'html'))
+
+        try:
+            with smtplib.SMTP(self.smtp_server, self.smtp_port) as server:
+                server.starttls()
+                server.login(self.smtp_user, self.smtp_pass)
+                server.send_message(msg)
+                print("Weekly summary email sent.")
+        except Exception as e:
+            print(f"Failed to send weekly summary: {e}")

@@ -6,3 +6,5 @@ plotly
 python-dotenv
 matplotlib
 jinja2
+requests
+schedule

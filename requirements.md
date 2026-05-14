@@ -1,44 +1,44 @@
-# FormoCast: Professional Requirements Specification
+# FormoCast: Profesyonel Gereksinim Spesifikasyonu
 
-## 1. Executive Summary
-FormoCast is an advanced financial surveillance system designed to autonomously monitor market data, identify high-probability technical patterns, and deliver visual intelligence to the user. The system prioritizes aesthetic excellence, architectural simplicity, and data-driven accuracy analysis.
+## 1. Yönetici Özeti
+FormoCast, piyasa verilerini otonom olarak izlemek, yüksek olasılıklı teknik formasyonları tespit etmek ve kullanıcıya görsel istihbarat sunmak üzere tasarlanmış gelişmiş bir finansal gözetim sistemidir. Sistem; estetik mükemmellik, mimari sadelik ve veri odaklı doğruluk analizine öncelik verir.
 
-## 2. Functional Requirements (FR)
+## 2. Fonksiyonel Gereksinimler (FR)
 
-### 2.1 Surveillance & Data Acquisition
-- **FR-1.1: Multi-Asset Monitoring:** System must support Tickers for Stocks, Crypto, and Forex via `yfinance`.
-- **FR-1.2: Dynamic Timeframes:** Ability to analyze Daily, Weekly, and 4-hour intervals (configurable).
-- **FR-1.3: Data Integrity:** Implement robust error handling for API rate limits and missing data points (NaN handling).
+### 2.1 Veri Toplama ve Gözetim
+- **FR-1.1: Çoklu Varlık İzleme:** Sistem, `yfinance` üzerinden Hisse Senetleri, Kripto ve Forex paritelerini desteklemelidir.
+- **FR-1.2: Dinamik Zaman Dilimleri:** Günlük, Haftalık ve 4 saatlik periyotları analiz edebilme yeteneği (yapılandırılabilir).
+- **FR-1.3: Veri Bütünlüğü:** API limitleri ve eksik veri noktaları (NaN) için sağlam hata yönetimi uygulanmalıdır.
 
-### 2.2 Pattern Intelligence
-- **FR-2.1: Geometric Pattern Detection:** Implementation of high-fidelity detection algorithms for:
-    - **Double Top/Bottom:** 2-peak/trough level parity within a 2% variance threshold.
-    - **Head and Shoulders:** Recognition of shoulder-head-shoulder symmetry.
-    - **Triangles/Wedges:** Identification of converging trendlines using linear regression on extrema.
-- **FR-2.2: Signal Generation:** Each detected pattern must generate a "Confidence Score" and a "Predicted Direction" (Bullish/Bearish).
+### 2.2 Formasyon Zekası
+- **FR-2.1: Geometrik Formasyon Tespiti:** Aşağıdaki formasyonlar için yüksek doğruluklu algoritmaların uygulanması:
+    - **İkili Tepe/Dip (Double Top/Bottom):** %2'lik bir sapma eşiği içinde 2 tepe/dip seviyesi dengesi.
+    - **Omuz Baş Omuz (Head and Shoulders):** Omuz-baş-omuz simetrisinin tanınması.
+    - **Üçgenler/Takozlar:** Ekstremum noktaları üzerinde lineer regresyon kullanarak yakınsayan trend çizgilerinin belirlenmesi.
+- **FR-2.2: Sinyal Üretimi:** Tespit edilen her formasyon bir "Güven Puanı" ve "Öngörülen Yön" (Boğa/Ayı) üretmelidir.
 
-### 2.3 Visual Intelligence & Reporting
-- **FR-3.1: Premium Charting:** Generation of Dark-Mode, publication-ready charts highlighting pattern extrema and target zones.
-- **FR-3.2: Automated Notifier:** Real-time email delivery with embedded visuals and executive summaries.
-- **FR-3.3: Weekly Performance Audit:** Automated generation of a "Success/Fail" report based on historical prediction outcomes.
+### 2.3 Görsel Zeka ve Raporlama
+- **FR-3.1: Premium Grafikleme:** Formasyon ekstremumlarını ve hedef bölgelerini vurgulayan, yayına hazır "Dark-Mode" grafiklerin oluşturulması.
+- **FR-3.2: Otomatik Bildirimci:** Gömülü görseller ve yönetici özetleri ile gerçek zamanlı e-posta gönderimi.
+- **FR-3.3: Haftalık Performans Denetimi:** Geçmiş tahmin sonuçlarına dayalı olarak otomatik "Başarı/Başarısızlık" raporu oluşturulması.
 
-## 3. Non-Functional Requirements (NFR)
+## 3. Fonksiyonel Olmayan Gereksinimler (NFR)
 
-### 3.1 Design Aesthetics (ULTRATHINK Mode)
-- **NFR-3.1.1: Intentional Minimalism:** The UI/Reports must avoid "bootstrapped" generic looks. Custom hex-coded palettes (#00d1b2, #2d2d2d) must be used.
-- **NFR-3.1.2: Visual Hierarchy:** Email reports must prioritize the most critical information (Ticker + Direction) through typography and whitespace.
+### 3.1 Tasarım Estetiği (ULTRATHINK Modu)
+- **NFR-3.1.1: Kasıtlı Minimalizm:** Arayüz ve raporlar "generic" hazır şablonlardan kaçınmalıdır. Özel renk paletleri (#00d1b2, #2d2d2d) kullanılmalıdır.
+- **NFR-3.1.2: Görsel Hiyerarşi:** E-posta raporları, tipografi ve boşluk kullanımı yoluyla en kritik bilgileri (Sembol + Yön) önceliklendirmelidir.
 
-### 3.2 Engineering Standards (Karpathy Guidelines)
-- **NFR-3.2.1: Surgical Implementation:** No speculative abstractions. Every module must serve a direct functional requirement.
-- **NFR-3.2.2: Environment Parity:** Full Dockerization to ensure "it works on my machine" consistency.
-- **NFR-3.2.3: Database Performance:** SQLite with indexed lookups on `ticker` and `target_date`.
+### 3.2 Mühendislik Standartları (Karpathy Prensipleri)
+- **NFR-3.2.1: Cerrahi Uygulama:** Spekülatif soyutlamalardan kaçınılmalıdır. Her modül doğrudan bir fonksiyonel gereksinime hizmet etmelidir.
+- **NFR-3.2.2: Ortam Eşitliği:** "Benim makinemde çalışıyor" sorununu önlemek için tam Dockerizasyon.
+- **NFR-3.2.3: Veritabanı Performansı:** `ticker` ve `target_date` üzerinde indekslenmiş aramalar ile SQLite kullanımı.
 
-## 4. Constraint Analysis & Assumptions
-- **API Limits:** We assume the user is using the free tier of `yfinance`. We implement jitter and delay to avoid IP blocks.
-- **Prediction Horizon:** Predictions are currently fixed to a 7-day look-forward period.
-- **Security:** SMTP credentials must never be hardcoded and should be injected via `.env`.
+## 4. Kısıt Analizi ve Varsayımlar
+- **API Limitleri:** Kullanıcının `yfinance` ücretsiz katmanını kullandığı varsayılır. IP engellemelerini önlemek için gecikme (delay) mekanizmaları uygulanır.
+- **Öngörü Ufku:** Tahminler şu anda 7 günlük bir ileriye dönük periyot ile sabitlenmiştir.
+- **Güvenlik:** SMTP kimlik bilgileri asla kod içine gömülmemeli ve `.env` üzerinden enjekte edilmelidir.
 
-## 5. Success Criteria
-- **Detection Reliability:** Zero false positives in "perfect" historical pattern samples.
-- **Visual Impact:** Reports must meet "Senior Architect" visual standards (clean, informative, aesthetic).
-- **Operational Autonomy:** The system must run for 7 days without manual restart or memory leakage.
+## 5. Başarı Kriterleri
+- **Tespit Güvenilirliği:** "Mükemmel" geçmiş formasyon örneklerinde sıfır hatalı pozitif.
+- **Görsel Etki:** Raporlar "Kıdemli Mimar" görsel standartlarını karşılamalıdır (temiz, bilgilendirici, estetik).
+- **Operasyonel Otonomi:** Sistem, manuel müdahale veya bellek sızıntısı olmadan 7 gün boyunca çalışabilmelidir.

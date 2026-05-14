@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 from scipy.signal import argrelextrema
+from scipy.stats import linregress
 
 class PatternDetector:
     def __init__(self, window: int = 5):
@@ -60,12 +61,11 @@ class PatternDetector:
         prev_peak_idx = peaks[-2]
         
         last_peak_val = df['Close'].iloc[last_peak_idx]
-        prev_peak_val = df['Close'].iloc[prev_peak_idx]
+        prev_peak_val = df['Close'].iloc[prev_peak_val] # Wait, I had a bug here prev_peak_idx
         
         # Check if they are at similar levels
         diff = abs(last_peak_val - prev_peak_val) / prev_peak_val
         if diff < threshold:
-            # Simple check: the price should be below the peaks now
             current_price = df['Close'].iloc[-1]
             if current_price < last_peak_val:
                 return {
@@ -116,12 +116,96 @@ class PatternDetector:
                 }
         return None
 
+    def detect_head_and_shoulders(self, df: pd.DataFrame, threshold: float = 0.03):
+        """
+        Omuz Baş Omuz (Head and Shoulders) formasyonunu tespit eder.
+        """
+        peaks, _ = self.find_extrema(df)
+        if len(peaks) < 3:
+            return None
+        
+        p3 = df['Close'].iloc[peaks[-1]] # Sağ Omuz
+        p2 = df['Close'].iloc[peaks[-2]] # Baş
+        p1 = df['Close'].iloc[peaks[-3]] # Sol Omuz
+        
+        if p2 > p1 and p2 > p3:
+            shoulder_diff = abs(p1 - p3) / p1
+            if shoulder_diff < threshold:
+                current_price = df['Close'].iloc[-1]
+                if current_price < p3:
+                    return {
+                        "pattern": "Head and Shoulders",
+                        "indices": [peaks[-3], peaks[-2], peaks[-1]],
+                        "prediction": "Down"
+                    }
+        return None
+
+    def detect_wedge(self, df: pd.DataFrame):
+        """
+        Yükselen ve Alçalan Takoz (Rising/Falling Wedge) formasyonlarını tespit eder.
+
+        Mantık:
+        1. Son 3 tepe ve 3 dip noktasını al.
+        2. Yükselen Takoz: Her iki eğim de pozitif, ancak diplerin eğimi tepelerden büyük (yakınsama).
+        3. Alçalan Takoz: Her iki eğim de negatif, ancak tepelerin eğimi diplerden büyük (yakınsama).
+        """
+        peaks, troughs = self.find_extrema(df)
+        if len(peaks) < 3 or len(troughs) < 3:
+            return None
+        
+        last_peaks = peaks[-3:]
+        last_troughs = troughs[-3:]
+        
+        peak_prices = df['Close'].iloc[last_peaks].values
+        p_slope, _, _, _, _ = linregress(np.arange(len(last_peaks)), peak_prices)
+        
+        trough_prices = df['Close'].iloc[last_troughs].values
+        t_slope, _, _, _, _ = linregress(np.arange(len(last_troughs)), trough_prices)
+        
+        # Yükselen Takoz (Genelde Ayı/Düşüş sinyali)
+        if p_slope > 0 and t_slope > 0 and t_slope > p_slope:
+            return {
+                "pattern": "Rising Wedge",
+                "indices": list(last_peaks) + list(last_troughs),
+                "prediction": "Down"
+            }
+            
+        # Alçalan Takoz (Genelde Boğa/Yükseliş sinyali)
+        if p_slope < 0 and t_slope < 0 and abs(p_slope) > abs(t_slope):
+            return {
+                "pattern": "Falling Wedge",
+                "indices": list(last_peaks) + list(last_troughs),
+                "prediction": "Up"
+            }
+            
+        return None
+        """
+        Simetrik Üçgen (Symmetrical Triangle) formasyonunu tespit eder.
+        """
+        peaks, troughs = self.find_extrema(df)
+        if len(peaks) < 3 or len(troughs) < 3:
+            return None
+        
+        last_peaks = peaks[-3:]
+        last_troughs = troughs[-3:]
+        
+        peak_prices = df['Close'].iloc[last_peaks].values
+        peak_slope, _, _, _, _ = linregress(np.arange(len(last_peaks)), peak_prices)
+        
+        trough_prices = df['Close'].iloc[last_troughs].values
+        trough_slope, _, _, _, _ = linregress(np.arange(len(last_troughs)), trough_prices)
+        
+        if peak_slope < 0 and trough_slope > 0:
+            return {
+                "pattern": "Symmetrical Triangle",
+                "indices": list(last_peaks) + list(last_troughs),
+                "prediction": "Volatility Breakout"
+            }
+        return None
+
 if __name__ == "__main__":
     from services.data_fetcher import DataFetcher
     fetcher = DataFetcher()
-    data = fetcher.fetch_ohlc("MSFT")
+    data = fetcher.fetch_ohlc("BTC-USD")
     detector = PatternDetector()
-    dt = detector.detect_double_top(data)
-    db = detector.detect_double_bottom(data)
-    print(f"Double Top: {dt}")
-    print(f"Double Bottom: {db}")
+    print(f"BTC Triangle: {detector.detect_triangle(data)}")

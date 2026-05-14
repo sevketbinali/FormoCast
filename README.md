@@ -1,50 +1,50 @@
 # FormoCast 🚀
 
-FormoCast is an automated financial analysis service that detects technical analysis patterns in stock and crypto charts, predicts price movements, and notifies you via email with professional-grade visual reports.
+FormoCast; hisse senedi ve kripto grafiklerinde teknik analiz formasyonlarını tespit eden, fiyat hareketlerini öngören ve sizi profesyonel düzeyde görsel raporlarla e-posta yoluyla bilgilendiren otonom bir finansal analiz servisidir.
 
-## ✨ Key Features
-- **Automated Detection:** Identifies Double Top, Double Bottom, and more.
-- **Premium Reports:** Dark-mode charts sent directly to your inbox.
-- **Performance Analytics:** Tracks prediction accuracy over time.
-- **Docker Ready:** Deploy anywhere with a single command.
+## ✨ Temel Özellikler
+- **Otomatik Tespit:** İkili Tepe, İkili Dip ve daha fazlasını tanımlar.
+- **Premium Raporlar:** Doğrudan gelen kutunuza gönderilen karanlık mod (dark-mode) grafikleri.
+- **Performans Analitiği:** Zaman içindeki tahmin doğruluğunu izler.
+- **Docker Hazır:** Tek bir komutla her yerde dağıtın.
 
-## 🛠 Tech Stack
+## 🛠 Teknoloji Yığını
 - **Python 3.10+** (Pandas, Scipy, Matplotlib)
-- **yfinance** (Market Data)
-- **SQLite** (Persistence)
+- **yfinance** (Piyasa Verisi)
+- **SQLite** (Kalıcılık)
 - **Docker & Docker Compose**
 
-## 🚀 Getting Started
+## 🚀 Başlarken
 
-### 1. Prerequisites
-- Docker & Docker Compose installed.
-- An SMTP server (e.g., Gmail App Password).
+### 1. Ön Gereksinimler
+- Docker ve Docker Compose yüklü olmalıdır.
+- Bir SMTP sunucusu (örneğin, Gmail Uygulama Şifresi).
 
-### 2. Configuration
-Copy `.env.example` to `.env` and fill in your details:
+### 2. Yapılandırma
+`.env.example` dosyasını `.env` olarak kopyalayın ve bilgilerinizi doldurun:
 ```bash
 cp .env.example .env
 ```
 
-### 3. Usage
-Run the pattern scanner:
+### 3. Kullanım
+Formasyon tarayıcıyı çalıştırın:
 ```bash
 docker-compose run app python main.py --scan --tickers AAPL TSLA BTC-USD
 ```
 
-Run the accuracy analyzer:
+Doğruluk analizini çalıştırın:
 ```bash
 docker-compose run app python main.py --analyze
 ```
 
-## 📂 Project Structure
-- `core/`: Detection and prediction logic.
-- `services/`: External integrations (Data, Visuals, Email).
-- `db/`: Database models and persistence.
-- `docs/`: (See `requirements.md`, `design.md`, `tasks.md` for details).
+## 📂 Proje Yapısı
+- `core/`: Tespit ve tahmin mantığı.
+- `services/`: Harici entegrasyonlar (Veri, Görsel, E-posta).
+- `db/`: Veritabanı modelleri ve kalıcılık.
+- `docs/`: (Detaylar için `requirements.md`, `design.md`, `tasks.md` dosyalarına bakın).
 
-## 📄 Documentation
-For detailed insights into the architecture and requirements, please refer to:
-- [Requirements](requirements.md)
-- [Design Document](design.md)
-- [Task Roadmap](tasks.md)
+## 📄 Dökümantasyon
+Mimari ve gereksinimler hakkında daha derinlemesine bilgi için lütfen şu dosyalara bakın:
+- [Gereksinimler](requirements.md)
+- [Tasarım Dokümanı](design.md)
+- [Görev Yol Haritası](tasks.md)
