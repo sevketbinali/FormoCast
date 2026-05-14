@@ -27,4 +27,6 @@
 - [x] **T-4.6: İnteraktif HTML Raporları (Plotly)**
 - [x] **T-4.7: Yönetici Dashboard'u (FastAPI)**
 - [x] **T-4.8: Docker Optimizasyonu (Non-root, Healthcheck)**
-- [ ] **T-4.3: Gerçek Zamanlı Veri Akışı (WebSockets)**
+- [x] **T-4.3: Gerçek Zamanlı Veri Akışı (WebSockets)**
+    - *Açıklama:* Binance üzerinden canlı fiyat akışı ve anlık tespit.
+    - *Başarı Kriteri:* Yeni bir mum kapandığında anlık bildirim gönderilir.

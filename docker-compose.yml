@@ -22,6 +22,17 @@ services:
     command: ["python", "dashboard.py"]
     restart: always
 
+  streamer:
+    build: .
+    volumes:
+      - .:/app
+      - data_volume:/app/data
+      - plots_volume:/app/plots
+    env_file:
+      - .env
+    command: ["python", "services/streamer.py"]
+    restart: always
+
   test:
     build: .
     volumes:
