@@ -78,7 +78,8 @@ async def trigger_manual_scan(background_tasks: BackgroundTasks):
     Triggers a manual BIST scan in the background.
     """
     try:
-        # We run it in a background task to not block the UI
+        # Clear cache for manual testing to ensure emails are sent
+        manual_scanner.processed_signals.clear()
         background_tasks.add_task(manual_scanner.scan)
         return {"status": "success", "message": "BIST 100 taraması arka planda başlatıldı."}
     except Exception as e:

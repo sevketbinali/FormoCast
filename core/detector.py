@@ -16,12 +16,10 @@ class PatternDetector:
         troughs = argrelextrema(data, np.less, order=self.window)[0]
         return peaks, troughs
 
-    def _is_recent(self, df, indices, max_lookback=10):
+    def _is_recent(self, df, indices, max_lookback=15):
         """Checks if the pattern's last point is within the last 'max_lookback' candles."""
-        last_idx = max(indices)
-        # Convert index to position if it's datetime or something else
-        pos = df.index.get_loc(last_idx)
-        return (len(df) - 1 - pos) <= max_lookback
+        last_pos = max(indices)
+        return (len(df) - 1 - last_pos) <= max_lookback
 
     def detect_double_top(self, df: pd.DataFrame, threshold: float = 0.02):
         """
