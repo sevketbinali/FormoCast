@@ -33,6 +33,17 @@ services:
     command: ["python", "services/streamer.py"]
     restart: always
 
+  bist-scanner:
+    build: .
+    volumes:
+      - .:/app
+      - data_volume:/app/data
+      - plots_volume:/app/plots
+    env_file:
+      - .env
+    command: ["python", "services/bist_scanner.py"]
+    restart: always
+
   test:
     build: .
     volumes:

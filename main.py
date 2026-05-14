@@ -36,9 +36,12 @@ def run_scanner(tickers):
         for p in patterns:
             if p:
                 print(f"!!! Pattern Found: {p['pattern']} for {ticker}")
-                # Save to DB
+                # Save to DB with target and timeframe
                 current_price = df['Close'].iloc[-1]
-                db.save_prediction(ticker, p['pattern'], p['prediction'], current_price)
+                target_price = p.get('target_price')
+                timeframe = p.get('timeframe_days', 7)
+                
+                db.save_prediction(ticker, p['pattern'], p['prediction'], current_price, target_price, timeframe)
                 
                 # Generate Static Visual
                 chart_path = visualizer.plot_pattern(df, ticker, p)
@@ -56,31 +59,51 @@ def run_scanner(tickers):
 def run_analysis():
     db = Database()
     fetcher = DataFetcher()
-    pending = db.get_pending_predictions()
+    # Fetch pending OR checked but recently mature (for PnL update)
+    conn = sqlite3.connect(db.db_path)
+    cursor = conn.cursor()
+    cursor.execute("SELECT id, ticker, predicted_direction, entry_price, target_price, target_date FROM predictions WHERE accuracy_checked = 0")
+    pending = cursor.fetchall()
+    conn.close()
     
     if not pending:
         print("No pending predictions to analyze.")
         return
 
-    for pred_id, ticker, pred_date, direction, entry_price, target_date in pending:
+    for pred_id, ticker, direction, entry_price, target_price, target_date in pending:
         print(f"Analyzing prediction {pred_id} for {ticker}...")
         df = fetcher.fetch_ohlc(ticker, period="1mo")
         if df.empty:
             continue
         
-        # Check price at target date (or most recent)
-        # Find price on or after target_date
-        target_price_series = df.loc[df.index >= pd.Timestamp(target_date)]
-        if target_price_series.empty:
-            continue
+        # Current price
+        current_price = df['Close'].iloc[-1]
         
-        target_price = target_price_series['Close'].iloc[0]
+        # Target Hit?
+        target_hit = False
+        if target_price:
+            if direction == "Up" and df['High'].max() >= target_price:
+                target_hit = True
+            elif direction == "Down" and df['Low'].min() <= target_price:
+                target_hit = True
+
+        # Date Expired?
+        expired = datetime.now() >= datetime.strptime(target_date, "%Y-%m-%d %H:%M:%S")
         
-        outcome = "Correct" if (direction == "Up" and target_price > entry_price) or \
-                              (direction == "Down" and target_price < entry_price) else "Incorrect"
-        
-        db.update_accuracy(pred_id, outcome)
-        print(f"Outcome for {ticker}: {outcome}")
+        if target_hit or expired:
+            outcome = "Correct" if target_hit else "Incorrect"
+            # Final price for PnL calculation
+            final_price = target_price if target_hit else current_price
+            pnl = ((final_price - entry_price) / entry_price) * 100
+            if direction == "Down": pnl = -pnl # Short position
+            
+            # Update DB
+            conn = sqlite3.connect(db.db_path)
+            cursor = conn.cursor()
+            cursor.execute("UPDATE predictions SET actual_outcome = ?, pnl_percent = ?, accuracy_checked = 1 WHERE id = ?", (outcome, pnl, pred_id))
+            conn.commit()
+            conn.close()
+            print(f"Outcome for {ticker}: {outcome} (PnL: {pnl:.2f}%)")
 
 def run_report():
     analyzer = AccuracyAnalyzer()

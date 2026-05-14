@@ -36,7 +36,14 @@ class Notifier:
               <h1 style="color: #00d1b2; text-align: center;">FormoCast Alert</h1>
               <hr style="border: 0; border-top: 1px solid #4a4a4a; margin: 20px 0;">
               <p style="font-size: 18px;"><strong>{ticker}</strong> sembolünde <strong>{pattern_info['pattern']}</strong> formasyonu tespit edildi.</p>
-              <p style="font-size: 16px;">Öngörülen Yön: <span style="color: {'#48c774' if pattern_info['prediction'] == 'Up' else '#ff3860'}; font-weight: bold;">{pattern_info['prediction']}</span></p>
+              <p style="font-size: 16px;">
+                Öngörülen Yön: <span style="color: {'#48c774' if pattern_info['prediction'] == 'Up' else '#ff3860'}; font-weight: bold;">{pattern_info['prediction']}</span><br>
+                Hedef Fiyat: <span style="color: #00d1b2; font-weight: bold;">{pattern_info.get('target_price', 'Belirlenmedi'):.2f}</span><br>
+                Beklenen Vade: <span style="color: #b5b5b5;">{pattern_info.get('timeframe_days', '?')} Gün</span>
+              </p>
+              <div style="background-color: #333; padding: 15px; border-radius: 5px; margin-top: 20px; font-size: 14px; border-left: 4px solid #00d1b2;">
+                <strong>Profesyonel Analiz:</strong> {self._generate_commentary(pattern_info)}
+              </div>
               <div style="text-align: center; margin-top: 30px;">
                 <img src="cid:chart_image" alt="Technical Analysis Chart" style="max-width: 100%; border-radius: 5px; border: 1px solid #4a4a4a;">
               </div>
@@ -136,3 +143,18 @@ class Notifier:
                 print("Weekly summary email sent.")
         except Exception as e:
             print(f"Failed to send weekly summary: {e}")
+
+    def _generate_commentary(self, pattern_info: dict) -> str:
+        pattern = pattern_info['pattern']
+        
+        comments = {
+            "Double Top": "Fiyat iki kez direnç seviyesinden döndü. Boyun çizgisinin kırılması güçlü bir düşüş trendinin başlangıcı olabilir.",
+            "Double Bottom": "Fiyat iki kez destek seviyesinden tepki aldı. Boyun çizgisinin aşılmasıyla yükseliş ivme kazanabilir.",
+            "Head and Shoulders": "Trend dönüş formasyonu tamamlandı. Omuz seviyelerinin altındaki kapanışlar derinleşen bir satışı tetikleyebilir.",
+            "Symmetrical Triangle": "Fiyat daralan bir üçgen içine sıkıştı. Yaklaşan hacimli bir kırılım yüksek volatiliteye neden olacaktır.",
+            "Rising Wedge": "Yükselen takozda dipler tepelerden daha hızlı yükseliyor, bu durum alıcıların yorulduğunu ve bir düşüşün yakın olduğunu gösterir.",
+            "Falling Wedge": "Alçalan takozda tepeler diplerden daha hızlı düşüyor, bu durum satıcıların baskısının azaldığını ve bir yükseliş tepkisinin yaklaştığını işaret eder.",
+            "Cup and Handle": "Güçlü bir boğa formasyonu. Fincan derinliği kadar bir yükseliş potansiyeli masada, kulp üzerindeki kapanışlar takip edilmeli."
+        }
+        
+        return comments.get(pattern, "Teknik göstergeler formasyonun olgunlaştığını gösteriyor. Kırılım yönünde pozisyon takibi önerilir.")
